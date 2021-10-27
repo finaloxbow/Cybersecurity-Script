@@ -5,15 +5,15 @@ This PowerShell installs and uninstalls Windows features that cannot normally be
 #>
 
 $featuresToUninstall = @('Simple-TCPIP'		#Simple TCP/IP Services
-						'Telnet-Client'		#Telnet
-						'SNMP-Service'		#SNMP
-						'TFTP-Client'		#FTP
-						'NFS-Client'		#Client for NFS
-						'FS-SMB1'			#SMB File Sharing
-						'SMTP-Server'		#SMTP
-						'RPC-over-HTTP-Proxy'	#RPC
-						'Remote-Assistance'	#Remote Assistance
-						'RSAT')				#Remote Server Administration Tools
+			'Telnet-Client'		#Telnet
+			'SNMP-Service'		#SNMP
+			'TFTP-Client'		#FTP
+			'NFS-Client'		#Client for NFS
+			'FS-SMB1'		#SMB File Sharing
+			'SMTP-Server'		#SMTP
+			'RPC-over-HTTP-Proxy'	#RPC
+			'Remote-Assistance'	#Remote Assistance
+			'RSAT')			#Remote Server Administration Tools
 
 
 #Uninstalls features in the list
