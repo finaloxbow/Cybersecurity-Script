@@ -1,0 +1,162 @@
+echo off
+
+::reset local secpol to default
+secedit /configure /cfg %windir%\inf\defltbase.inf /db defltbase.sdb /verbose
+
+::get user info back
+for /f %%a in ('wmic useraccount get name') do net localgroup users /add %%a
+
+::set password for all accounts(Password: Earth*123456)
+for /f %%b in ('wmic useraccount get name') do net user %%b Earth*123456
+
+::list all user info in txt file
+wmic useraccount > %userprofile%\desktop\useraccountsfull.txt
+wmic useraccount get name > %userprofile%\desktop\useraccounts.txt
+
+::user account checkbox info
+wmic useraccount set passwordexpires=true
+
+wmic useraccount set passwordchangeable=true
+
+wmic useraccount set password required=true
+
+for /f "skip=1" %%a in ('wmic useraccount get name') do net user %%a /logonpasswordchg:yes
+
+::set password policy
+net accounts /uniquepw:5
+
+net accounts /maxpwage:90
+
+net accounts /minpwage:30
+
+net accounts /minpwlen:12
+
+net accounts /lockoutthreshold:5
+
+net accounts /lockoutwindow:10
+
+::set audit policy
+auditpol /set /category:* /success:enable /failure:enable
+
+::firewall to default
+firewall.cpl
+
+::turn on firewall for all profiles
+netsh advfirewall set allprofiles state on
+
+::Turn off Windows Services
+
+	::UPnP Device Host
+	sc config "upnphost" start= disabled
+	sc stop "upnphost"
+
+	::SNMP Trap
+	sc config "SNMPTRAP" start= disabled
+	sc stop "SNMPTRAP"
+
+	::Windows Event Collector (Started)
+	sc config "Wecsvc" start= auto
+	sc start "Wecsvc"
+
+	::Remote Registry
+	sc config "RemoteRegistry" start= disabled
+	sc stop "RemoteRegistry"
+
+	::SSDP Discovery
+	sc config "SSDPSRV" start= disabled
+	sc stop "SSDPSRV"
+
+	::Xbox stuff
+	sc config "XblAuthManager" start= disabled
+	sc stop "XblAuthManager"
+
+	sc config "XblGameSave" start= disabled
+	sc stop "XblGameSave"
+
+	::Bluetooth Support Service
+	sc config "bthserv" start= disabled
+	sc stop "bthserv"
+
+	::Internet Connection Sharing (ICS)
+	sc config "SharedAccess" start= disabled
+	sc stop "SharedAccess"
+
+	::IP Helper
+	sc config "iphlpsvc" start= disabled
+	sc stop "iphlpsvc"
+
+	::Telephony
+	sc config "TapiSrv" start= disabled
+	sc stop "TapiSrv"
+
+	::Geolocation Services
+	sc config "lfsvc" start= disabled
+	sc stop "lfsvc"
+
+	::Windows Defender (Started)
+	sc config "WinDefend" start= auto
+	sc start "WinDefend"
+
+	::Windows Update Service (Started)
+	sc config "wuauserv" start= auto
+	sc start "wuauserv"
+
+	::Telnet
+	sc config "TlntSvr" start= disabled
+	sc stop "TlntSvr"
+
+	::Fax
+	sc config "Fax" start= disabled
+	sc stop "Fax"
+
+	::HomeGroup Listener/Provider
+	sc config "HomeGroupListener" start= disabled
+	sc stop "HomeGroupListener"
+
+	sc config "HomeGroupProvider" start= disabled
+	sc stop "HomeGroupProvider"
+
+	::WebClient
+	sc config "WebClient" start= disabled
+	sc stop "WebClient"
+
+	::Client for NFS
+	sc config "NfsClnt" start= disabled
+	sc stop "NfsClnt"
+
+	::FTP
+	sc config "ftpsvc" start= disabled
+	sc stop "ftpsvc"
+
+	::Windows Remote Management
+	sc config "WinRM" start= disabled
+	sc stop "WinRM"
+
+	::SNMP
+	sc config "SNMP" start= disabled
+	sc stop "SNMP"
+	
+	::RPC Locator
+	sc config "RpcLocator" start=disabled
+	sc stop "RpcLocator"
+
+
+::disable guest and admin users
+	
+net user guest /active:no
+net user administrator /active:no
+
+:remove features using PoSH script
+
+PowerShell -NoProfile -ExecutionPolicy Unrestricted -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Unrestricted -File ""%userprofile%\desktop\featureuninstaller(PoSH).ps1""' -Verb RunAs}";
+
+
+::LGPO stuff and GodMode Folder
+cd %userprofile%\desktop
+mkdir GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}
+cd movetodesktop\lgpostuff
+lgpo.exe /g {3B113E5A-F06C-4661-B7FE-3FD88268327F}
+
+
+pause
+

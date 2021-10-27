@@ -1,0 +1,44 @@
+
+#Bitlocker
+
+	Install-WindowsFeature -Name Bitlocker -computerName $env:computername
+
+#Simple TCP/IP Services
+
+	Uninstall-WindowsFeature -Name Simple-TCPIP -computerName $env:computername
+
+#Telnet
+
+	Uninstall-WindowsFeature -Name Telnet-Client -computerName $env:computername
+
+#SNMP
+
+	Uninstall-WindowsFeature -Name SNMP-Service -computerName $env:computername
+
+#FTP
+
+	Uninstall-WindowsFeature -Name TFTP-Client -computerName $env:computername
+
+#Client for NFS
+
+	Uninstall-WindowsFeature -Name NFS-Client -computerName $env:computername
+
+#SMB File Sharing
+
+	Uninstall-WindowsFeature -Name FS-SMB1 -computerName $env:computername
+
+#SMTP
+
+	Uninstall-WindowsFeature -Name SMTP-Server -computerName $env:computername
+
+#RPC
+
+	Uninstall-WindowsFeature -Name RPC-over-HTTP-Proxy -computerName $env:computername
+
+#Remote Assistance
+
+	Uninstall-WindowsFeature -Name Remote-Assistance -computerName $env:computername
+
+#Remote Server Administration Tools
+
+	Uninstall-WindowsFeature -Name RSAT -computerName $env:computername
