@@ -1,159 +1,113 @@
 echo off
 
-::reset local secpol to default
+::Resets the Local Security Policy to default in case of prior tampering.
 secedit /configure /cfg %windir%\inf\defltbase.inf /db defltbase.sdb /verbose
 
-::get user info back
+
+::Prints out data about user accounts on machine.
 for /f %%a in ('wmic useraccount get name') do net localgroup users /add %%a
 
-::set password for all accounts(Password: Earth*123456)
+::Sets passwords for all users to "Earth*123456".
 for /f %%b in ('wmic useraccount get name') do net user %%b Earth*123456
 
-::list all user info in txt file
+::Lists all user data and outputs to a text file.
 wmic useraccount > %userprofile%\desktop\useraccountsfull.txt
 wmic useraccount get name > %userprofile%\desktop\useraccounts.txt
 
-::user account checkbox info
-wmic useraccount set passwordexpires=true
+::Changes user account checkbox info, such as password expiration and requirements.
+wmic useraccount set passwordexpires=true	::Password Expires
 
-wmic useraccount set passwordchangeable=true
+wmic useraccount set passwordchangeable=true	::Password can be changed
 
-wmic useraccount set password required=true
+wmic useraccount set passwordrequired=true		::Password required for all users
 
+::Force users to change passwords at next logon.
 for /f "skip=1" %%a in ('wmic useraccount get name') do net user %%a /logonpasswordchg:yes
 
-::set password policy
-net accounts /uniquepw:5
 
-net accounts /maxpwage:90
+::Sets password policies for all users on machine.
+net accounts /uniquepw:5	::Number of unique passwords required before user can use old passwords - 5 passwords
 
-net accounts /minpwage:30
+net accounts /maxpwage:90	::Max password age - 90 days
 
-net accounts /minpwlen:12
+net accounts /minpwage:30	::Min password age - 30 days
 
-net accounts /lockoutthreshold:5
+net accounts /minpwlen:12	::Min password length - 12 characters
 
-net accounts /lockoutwindow:10
+net accounts /lockoutthreshold:5	::Lockout threshold - 5 unsuccessful logins
 
-::set audit policy
+net accounts /lockoutwindow:10	::Lockout window - 10 minutes
+
+::Sets audit policy to log all possible actions.
 auditpol /set /category:* /success:enable /failure:enable
 
-::firewall to default
+::Sets firewall to default.
 firewall.cpl
 
-::turn on firewall for all profiles
+::Turns on firewall for all profiles.
 netsh advfirewall set allprofiles state on
 
-::Turn off Windows Services
+::Configures services for maximum security.
 
-	::UPnP Device Host
-	sc config "upnphost" start= disabled
-	sc stop "upnphost"
+::Services to disable
+set servDisable[0]="upnphost"		::UPnP Device Host
+set servDisable[1] = "SNMPTRAP"		::SNMP Trap
+set servDisable[2] = "TlntSvr"		::Telnet
+set servDisable[3] = "RemoteRegistry"	::Remote Registry
+set servDisable[4] = "SSDPSRV"		::SSDP Discovery
+set servDisable[5] = "XblAuthManager"	::Xbox Stuff
+set servDisable[6] = "XblGameSave"	
+set servDisable[7] = "bthserv"		::Bluetooth Support	
+set servDisable[8] = "SharedAccess"	::Internet Connection Sharing(ICS)
+set servDisable[9] = "iphlpsvc"		::IP Helper
+set servDisable[10] = "Tapisrv"		::Telephony
+set servDisable[11] = "lfsvc"		::Geolocation Services
+set servDisable[12] = "Fax"			::Fax
+set servDisable[13] = "HomeGroupListener"	::HomeGroup Listener/Provider
+set servDisable[14] = "HomeGroupProvider"
+set servDisable[15] = "WebClient"		::WebClient
+set servDisable[16] = "NfsClnt"		::Client for Nfs
+set servDisable[17] = "ftpsvc"		::FTP
+set servDisable[18] = "WinRM"		::Windows Remote Management
+set servDisable[19] = "SNMP"		::SNMP
+set servDisable[15] = "RpcLocator"	::RPC Locator
 
-	::SNMP Trap
-	sc config "SNMPTRAP" start= disabled
-	sc stop "SNMPTRAP"
+::Disables services
+set "index=0"
 
-	::Windows Event Collector (Started)
-	sc config "Wecsvc" start= auto
-	sc start "Wecsvc"
+(for %%a in (%servDisable%) do (
+	sc config %%a start = disabled
+	sc stop %%a
+))
 
-	::Remote Registry
-	sc config "RemoteRegistry" start= disabled
-	sc stop "RemoteRegistry"
+::Services to enable
+set servEnable[0] = "Wecsvc"		::Windows Event Collector
+set servEnable[1] = "WinDefend"		::Windows Defender
+set servEnable[2] = "wuauserv"		::Windows Update Service
 
-	::SSDP Discovery
-	sc config "SSDPSRV" start= disabled
-	sc stop "SSDPSRV"
+::Enables required services
+set "index=0"
 
-	::Xbox stuff
-	sc config "XblAuthManager" start= disabled
-	sc stop "XblAuthManager"
+(for %%a in (%servEnable%) do (
+	sc config %%a start= auto
+	sc start %%a
+))
 
-	sc config "XblGameSave" start= disabled
-	sc stop "XblGameSave"
-
-	::Bluetooth Support Service
-	sc config "bthserv" start= disabled
-	sc stop "bthserv"
-
-	::Internet Connection Sharing (ICS)
-	sc config "SharedAccess" start= disabled
-	sc stop "SharedAccess"
-
-	::IP Helper
-	sc config "iphlpsvc" start= disabled
-	sc stop "iphlpsvc"
-
-	::Telephony
-	sc config "TapiSrv" start= disabled
-	sc stop "TapiSrv"
-
-	::Geolocation Services
-	sc config "lfsvc" start= disabled
-	sc stop "lfsvc"
-
-	::Windows Defender (Started)
-	sc config "WinDefend" start= auto
-	sc start "WinDefend"
-
-	::Windows Update Service (Started)
-	sc config "wuauserv" start= auto
-	sc start "wuauserv"
-
-	::Telnet
-	sc config "TlntSvr" start= disabled
-	sc stop "TlntSvr"
-
-	::Fax
-	sc config "Fax" start= disabled
-	sc stop "Fax"
-
-	::HomeGroup Listener/Provider
-	sc config "HomeGroupListener" start= disabled
-	sc stop "HomeGroupListener"
-
-	sc config "HomeGroupProvider" start= disabled
-	sc stop "HomeGroupProvider"
-
-	::WebClient
-	sc config "WebClient" start= disabled
-	sc stop "WebClient"
-
-	::Client for NFS
-	sc config "NfsClnt" start= disabled
-	sc stop "NfsClnt"
-
-	::FTP
-	sc config "ftpsvc" start= disabled
-	sc stop "ftpsvc"
-
-	::Windows Remote Management
-	sc config "WinRM" start= disabled
-	sc stop "WinRM"
-
-	::SNMP
-	sc config "SNMP" start= disabled
-	sc stop "SNMP"
 	
-	::RPC Locator
-	sc config "RpcLocator" start=disabled
-	sc stop "RpcLocator"
-
-
-::disable guest and admin users
-	
+::Disables generic Guest and Administrator accounts
 net user guest /active:no
 net user administrator /active:no
 
-:remove features using PoSH script
 
+::Removes unneeded Windows features through an external PowerShell script.
 PowerShell -NoProfile -ExecutionPolicy Unrestricted -Command "& {Start-Process PowerShell -ArgumentList '-NoProfile -ExecutionPolicy Unrestricted -File ""%userprofile%\desktop\featureuninstaller(PoSH).ps1""' -Verb RunAs}";
 
 
-::LGPO stuff and GodMode Folder
+::Creates a GodMode folder to centralize administration.
 cd %userprofile%\desktop
 mkdir GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}
+
+::Imports a preconfigured GPO object using LGPO utility.
 cd movetodesktop\lgpostuff
 lgpo.exe /g {3B113E5A-F06C-4661-B7FE-3FD88268327F}
 

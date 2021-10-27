@@ -1,44 +1,27 @@
+<#
 
-#Bitlocker
+This PowerShell installs and uninstalls Windows features that cannot normally be uninstalled through Batch.
 
-	Install-WindowsFeature -Name Bitlocker -computerName $env:computername
+#>
 
-#Simple TCP/IP Services
+$featuresToUninstall = @('Simple-TCPIP'		#Simple TCP/IP Services
+						'Telnet-Client'		#Telnet
+						'SNMP-Service'		#SNMP
+						'TFTP-Client'		#FTP
+						'NFS-Client'		#Client for NFS
+						'FS-SMB1'			#SMB File Sharing
+						'SMTP-Server'		#SMTP
+						'RPC-over-HTTP-Proxy'	#RPC
+						'Remote-Assistance'	#Remote Assistance
+						'RSAT')				#Remote Server Administration Tools
 
-	Uninstall-WindowsFeature -Name Simple-TCPIP -computerName $env:computername
 
-#Telnet
+#Uninstalls features in the list
+					
+foreach ($serv in $featuresToUninstall) {
+	Uninstall-WindowsFeature -Name $serv -computerName $env:computername
+}
 
-	Uninstall-WindowsFeature -Name Telnet-Client -computerName $env:computername
 
-#SNMP
-
-	Uninstall-WindowsFeature -Name SNMP-Service -computerName $env:computername
-
-#FTP
-
-	Uninstall-WindowsFeature -Name TFTP-Client -computerName $env:computername
-
-#Client for NFS
-
-	Uninstall-WindowsFeature -Name NFS-Client -computerName $env:computername
-
-#SMB File Sharing
-
-	Uninstall-WindowsFeature -Name FS-SMB1 -computerName $env:computername
-
-#SMTP
-
-	Uninstall-WindowsFeature -Name SMTP-Server -computerName $env:computername
-
-#RPC
-
-	Uninstall-WindowsFeature -Name RPC-over-HTTP-Proxy -computerName $env:computername
-
-#Remote Assistance
-
-	Uninstall-WindowsFeature -Name Remote-Assistance -computerName $env:computername
-
-#Remote Server Administration Tools
-
-	Uninstall-WindowsFeature -Name RSAT -computerName $env:computername
+#Installs Bitlocker
+Install-WindowsFeature -Name Bitlocker -computerName $env:computername
