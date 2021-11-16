@@ -10,8 +10,10 @@ In the future, I hope to implement:
   - application-specific security settings, such as for internet browsers or Filezilla
   - firewall rules and port scanning
   - application updating
+  - 
 
 WARNING: Make sure you are in a VM before running these scripts, as they can cause irreversible changes to your system!
+
 
 How to use:
   1. Download and unzip contents to desktop.
